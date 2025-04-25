@@ -1,5 +1,6 @@
 import numpy as np
 from classes import sim_world, sim_agent
+from classes.spatial_anomaly import RadioAnomaly
 
 class Monitor:
     def __init__(self, map_name, num_agents):
@@ -8,6 +9,7 @@ class Monitor:
         """
         
         self.world = sim_world.World(map_name)
+        self.anomaly_class = RadioAnomaly(self.world.gridworld)
         self.num_agents = num_agents
         
         self.agents = self.generate_agents()
@@ -17,7 +19,7 @@ class Monitor:
         """
         :method: 'generate_agents' generates the agents in the world.
         """
-        x,y = np.where(self.world.gridworld == 1)
+        y,x = np.where(self.world.gridworld == 1)
         positions = [[x[i], y[i]] for i in np.random.randint(len(x), size=self.num_agents)]
         
         agents = [sim_agent.Agent(i, positions[i], self.world) for i in range(self.num_agents)]

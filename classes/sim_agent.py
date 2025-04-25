@@ -23,18 +23,19 @@ class Agent:
         direction = np.random.choice(range(8))
         
         # get new position
-        new_pos = (self.position[0] + (self.speed*self.neighbours[direction][0]), self.position[1] + (self.speed*self.neighbours[direction][1]))
+        # new_pos = (self.position[0] + (self.speed*self.neighbours[direction][0]), self.position[1] + (self.speed*self.neighbours[direction][1]))
+        new_x = self.position[0] + (self.speed*self.neighbours[direction][0])
+        new_y = self.position[1] + (self.speed*self.neighbours[direction][1])
         
         # check if new position is valid
-        if new_pos[0] >= 0 and new_pos[0] < self.world.gridworld.shape[0] and new_pos[1] >= 0 and new_pos[1] < self.world.gridworld.shape[1] and self.world.gridworld[new_pos[0], new_pos[1]] == 1:
-            self.position = new_pos
-        else: # if in a wall go the other way
-            new_pos = (self.position[0] - (self.speed*self.neighbours[direction][0]), self.position[1] - (self.speed*self.neighbours[direction][1]))
-            self.position = new_pos
+        if 0 <= new_x <= self.world.gridworld.shape[1] and 0 <= new_y <= self.world.gridworld.shape[0] and self.world.gridworld[new_y, new_x]:
+            self.position = [new_x, new_y]
+        # else dont move
         
     def agent_step(self, step_counter=None):
         
         self.randomWalk()
+        #pass
         
         
         

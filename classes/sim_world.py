@@ -17,7 +17,7 @@ class World:
         
 def generate_world(map_name):
     if map_name is not None:
-
+        print(f"Loading map: {map_name}")
         filename = f"maps/{map_name}/{map_name}.pgm"
 
         threshold = 0.95
@@ -39,7 +39,7 @@ def generate_world(map_name):
     else:
         
         # generate an empty world with black border
-        
+        print(f"Loading default map")
         grid = np.ones((600,600))
         grid = np.pad(grid, 10, 'constant', constant_values=0)
         
