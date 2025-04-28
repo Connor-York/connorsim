@@ -12,8 +12,6 @@ class World:
         
         self.gridworld = generate_world(map_name)
  
-        # plt.imshow(self.gridworld, cmap='gray', vmin=0.0, vmax=1.0)
-        # plt.show()
         
 def generate_world(map_name):
     if map_name is not None:
