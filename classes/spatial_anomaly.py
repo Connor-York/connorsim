@@ -9,17 +9,18 @@ class RadioAnomaly:
         
         
         sy, sx = gridworld.shape
-        self.source =(int(sx/2), int(sy/2)) #(600,100) # #middle of the map
+        self.source = (int(sx/2), int(sy/2)) #(600,100) # #middle of the map
+        #print(f"SOR = {self.source}")
         self.anomaly_status = 1
         self.anomaly_strength = 1000
-        self.wall_strength = 0.5 # how much to decrease signal by for each wall
+        self.wall_strength = 0.7 # how much to decrease signal by for each wall
         
         if generate_new:
             self.anomaly_world = self.generate_anomaly_world_walled()
-            np.save(f"maps/{self.map_name}/{self.source[0]}_{self.source[1]}_{int(100*self.wall_strength)}.npy", self.anomaly_world)
+            np.save(f"maps/{self.map_name}/central_multi.npy", self.anomaly_world)
         else:
             try:
-                self.anomaly_world = np.load(f"maps/{self.map_name}/{self.source[0]}_{self.source[1]}_{int(100*self.wall_strength)}.npy")
+                self.anomaly_world = np.load(f"maps/{self.map_name}/central_multi.npy")
             except FileNotFoundError:
                 print(f"No file with map: {self.map_name}, source: {self.source}")
             
@@ -44,6 +45,10 @@ class RadioAnomaly:
         walls calculated using raytracing to every point (expensive!) so save the file afterward.
         """
         x0, y0 = self.source
+        x1, y1 = (221,316)
+        x2, y2 = (88,205)
+        
+        
         radiating_field = np.zeros_like(self.gridworld)
         open_y, open_x = np.where(self.gridworld == 1)
         print("Generating anomaly diffusion: ")
@@ -51,18 +56,22 @@ class RadioAnomaly:
         for count, y in enumerate(open_y):
             print(f"\rLoading ... {count}/{iters}", end="")
             x = open_x[count]
-            coords = bresenhams_line((x0,y0),(x,y))
-            view = slice_from_coords(self.gridworld, coords)
-            walls = len(np.where(view==0)[0])
-            distance = (np.sqrt((y0 - y) ** 2 + (x0 - x) ** 2))
-            if distance != 0:
-                radiating_field[y, x] = ( self.anomaly_strength / (distance ** 2) ) * (self.wall_strength**walls)
-            else:
-                radiating_field[y, x] = self.anomaly_strength
+
+            walls0 = len(np.where(slice_from_coords(self.gridworld, bresenhams_line((x0,y0),(x,y)))==0)[0])
+            walls1 = len(np.where(slice_from_coords(self.gridworld, bresenhams_line((x1,y1),(x,y)))==0)[0])
+            #distance0 = (np.sqrt((y0 - y) ** 2 + (x0 - x) ** 2))
+            sq_norm0 = (y0-y)**2 + (x0-x)**2
+            sq_norm1 = (y1-y)**2 + (x1-x)**2
+            radiating_field[y,x] = (10 * np.exp(-sq_norm0/1000) * self.wall_strength**walls0) + (5 * np.exp(-sq_norm1/1000) * self.wall_strength**walls1)
+            # if distance0 == 0:
+            #     radiating_field[y, x] = self.anomaly_strength
+            # else:
+            #     radiating_field[y, x] =  (self.anomaly_strength / (distance0 ** 2)) + (self.wall_strength**walls0)
+                
                 
         return radiating_field
         
-        
+
     
     def generate_anomaly_world(self):
         """
@@ -74,7 +83,7 @@ class RadioAnomaly:
         x0, y0 = self.source
         for y in range(self.gridworld.shape[0]):
             for x in range(self.gridworld.shape[1]):
-                distance = (np.sqrt((y0 - y) ** 2 + (x0 - x) ** 2))
+                distance = (np.sqrt((y0 - y) ** 2 + (x0 - x) ** 2))               
                 if distance != 0:
                     radiating_field[y, x] = self.anomaly_strength / (distance ** 2)
                 else:

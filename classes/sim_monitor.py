@@ -16,6 +16,7 @@ class Monitor:
         self.agents = self.generate_agents()
         
         
+        
     def generate_agents(self):
         """
         :method: 'generate_agents' generates the agents in the world.
@@ -24,14 +25,30 @@ class Monitor:
         positions = [[x[i], y[i]] for i in np.random.randint(len(x), size=self.num_agents)]
         
         agents = [sim_agent.Agent(i, positions[i], self.world, self.anomaly_class) for i in range(self.num_agents)]
+        
+        agent_vals = np.array([agent.personal_best_value for agent in agents])
+        initial_best_position = agents[np.argmax(agent_vals)].position
+        initial_best_value = agents[np.argmax(agent_vals)].personal_best_value
+        
+        for agent in agents:
+            agent.global_best_position = initial_best_position
+            agent.global_best_value = initial_best_value
+        
         return agents
             
+    def handle_messages(self):
+        messages = [[agent.personal_best_position, agent.personal_best_value, agent.position, agent.ID] for agent in self.agents]
+
+        return messages
             
     def step_agents(self):
         """
         :method: 'step_agents' runs the simulation for one step.
         """
         self.step_counter += 1
+        
+        messages = self.handle_messages()
+        
         for agent in self.agents:
-            agent.agent_step(self.step_counter)
+            agent.agent_step(messages, self.step_counter)
             
